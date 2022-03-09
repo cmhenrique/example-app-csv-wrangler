@@ -4,5 +4,4 @@ matplotlib
 scikit-learn
 scikit-survival
 xgboost
-PIL
 mlxtend
