@@ -270,4 +270,4 @@ if (predizer):
         fig = plt
         buf = BytesIO()
         fig.savefig(buf, format="png")
-        st.image(buf, width = 600)
+        st.image(buf, width = 500)
