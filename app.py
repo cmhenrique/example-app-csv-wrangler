@@ -12,7 +12,7 @@ from sklearn.preprocessing import OrdinalEncoder
 
 from sksurv.datasets import load_gbsg2
 from sksurv.preprocessing import OneHotEncoder
-from sksurv.ensemble._forest import RandomSurvivalForest
+from sksurv.ensemble import RandomSurvivalForest
 
 from collections import Counter
 import pandas_profiling as pp
