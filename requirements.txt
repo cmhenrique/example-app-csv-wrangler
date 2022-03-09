@@ -1,8 +1,8 @@
 streamlit
 streamlit-aggrid==0.2.2-2
 matplotlib
-sklearn
-sksurv
+scikit-learn
+scikit-survival
 xgboost
 joblib
 PIL
