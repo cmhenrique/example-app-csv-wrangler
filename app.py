@@ -66,7 +66,7 @@ col1,col2,col3 = st.columns([1,1,2])
 @st.cache(allow_output_mutation=True)
 def model():
     df = pd.read_csv("data7.csv") 
-    df2 = df[['BIC', 'BIOFILME', 'ASMA','AERD', 'POLIPO', 'CULTURA', 'STAPHYLO', 'LM2', 'EOSINOFILICO']]  # Features
+    df2 = df[['BIC', 'BIOFILME', 'ASMA','AERD', 'POLIPO', 'CULTURA', 'STAPHYLO', 'LM', 'EOSINOFILICO']]  # Features
     df3 = OneHotEncoder().fit_transform(df2)
     Xt= df3
     feature_names = Xt.columns.tolist()
