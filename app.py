@@ -271,7 +271,3 @@ if (predizer):
         buf = BytesIO()
         fig.savefig(buf, format="png")
         st.image(buf, width = 450)
-
-        st.metric(label="1 Year", value="0.8")
-        st.metric(label="5 Years", value="0.5")
-        st.metric(label="8 Years", value="0.2")
