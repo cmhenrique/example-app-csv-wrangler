@@ -237,7 +237,10 @@ if (predizer):
     texto = "Hello World"
     rsf, feature_names = model()
     rf = predict()
-
+    
+    print(lm)
+    print(lm2)
+    
     paciente = [[bic, bf, asma, aerd, lm, polipo, eosinofilico, cultura, staphylo]]
     pct = pd.DataFrame(paciente, columns = feature_names)
 
