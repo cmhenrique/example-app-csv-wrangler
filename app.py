@@ -2,7 +2,9 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib import pyplot as plt
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 from sklearn.model_selection import train_test_split
