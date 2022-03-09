@@ -24,14 +24,8 @@ from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-import statsmodels.api as sm
-
-from joblib import dump, load
 
 ## HEADER
-from PIL import Image
-titleimg = Image.open('models/title.png')
-
 st.set_page_config(layout="wide")
 
 st.markdown("""
