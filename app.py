@@ -65,8 +65,8 @@ col1,col2,col3 = st.columns([1,1,2])
 
 @st.cache(allow_output_mutation=True)
 def model():
-    df = pd.read_csv("data7.csv")
-    df2 = df.drop(["sexo", "recidiva", "data_retorno", "data_cirurgia", "intervalo", "LM2"], axis=1)
+    df = pd.read_csv("data7.csv") 
+    df2 = df[['BIC', 'BIOFILME', 'ASMA','AERD', 'POLIPO', 'CULTURA', 'STAPHYLO', 'LM2', 'EOSINOFILICO']]  # Features
     df3 = OneHotEncoder().fit_transform(df2)
     Xt= df3
     feature_names = Xt.columns.tolist()
@@ -83,9 +83,9 @@ def model():
     dt = np.dtype([('cens', np.bool), ('time', np.float64, 1)])
     y = np.array(y, dtype=dt)
 
-    X_train, X_test, y_train, y_test = train_test_split(Xt, y, test_size=0.3, random_state=100)
+    X_train, X_test, y_train, y_test = train_test_split(Xt, y, test_size=0.3, random_state=12)
 
-    rsf = RandomSurvivalForest(n_estimators=30, random_state=12,max_depth=1)
+    rsf = RandomSurvivalForest()
     rsf.fit(X_train, y_train)
     rsf.score(X_test, y_test)
 
