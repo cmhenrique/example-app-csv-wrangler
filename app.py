@@ -94,10 +94,10 @@ def model():
 def predict():
     data = pd.read_csv("data7.csv") 
 
-    X=data[['BIC', 'BIOFILME', 'ASMA','AERD', 'POLIPO', 'CULTURA', 'STAPHYLO', 'LM2', 'EOSINOFILICO']]  # Features
+    X=data[['BIC', 'BIOFILME', 'ASMA','AERD', 'POLIPO', 'CULTURA', 'STAPHYLO', 'LM', 'EOSINOFILICO']]  # Features
     y=data['recidiva']  # Labels
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=100)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=12)
     
     ## LOGISTIC REGRESSION
     lr = LogisticRegression()
