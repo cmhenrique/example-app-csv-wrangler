@@ -7,6 +7,7 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
+from sklearn.metrics import confusion_matrix,accuracy_score,roc_curve,classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OrdinalEncoder
 
