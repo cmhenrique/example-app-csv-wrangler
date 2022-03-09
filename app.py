@@ -238,8 +238,10 @@ if (predizer):
     rsf, feature_names = model()
     rf = predict()
     
-    print(lm)
-    print(lm2)
+    with col3:
+        st.info(lm)
+        st.info(lm2)
+ 
     
     paciente = [[bic, bf, asma, aerd, lm, polipo, eosinofilico, cultura, staphylo]]
     pct = pd.DataFrame(paciente, columns = feature_names)
