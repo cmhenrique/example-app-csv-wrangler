@@ -242,11 +242,10 @@ if (predizer):
         st.info(lm)
         st.info(lm2)
  
-    
-    paciente = [[bic, bf, asma, aerd, lm, polipo, eosinofilico, cultura, staphylo]]
+    paciente = [[bic, bf, asma, aerd, polipo, cultura, staphylo, lm, eosinofilico]]
     pct = pd.DataFrame(paciente, columns = feature_names)
 
-    paciente2 = [[bic2, bf2, asma2, aerd2, lm2, polipo2, eosinofilico2, cultura2, staphylo2]]
+    paciente2 = [[bic2, bf2, asma2, aerd2, polipo2, cultura2, staphylo2, lm2, eosinofilico2]]
     pct2 = pd.DataFrame(paciente2, columns = feature_names)
 
     with col3:
