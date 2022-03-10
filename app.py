@@ -117,7 +117,7 @@ def predict():
 
 with col1:
     st.markdown("Pacient 1 Clinical variables associated")
-    lm =              st.slider("Lund-Mackay Score", 0, 20, 10, 1, key=1)
+    lm =              st.slider("Lund-Mackay Score", 0, 20, 10, key=1)
     bf =         st.checkbox('Bacterial Biofilm', key=1)
     bic =         st.checkbox('Intracellular Bacteria', key=1)
     aerd =            st.checkbox('AERD', key=1)
@@ -129,7 +129,7 @@ with col1:
 
 with col2:
     st.markdown("Pacient 2 Clinical variables associated")
-    lm2 =              st.slider("Lund-Mackay Score", 0, 20, 10, 1)
+    lm2 =              st.slider("Lund-Mackay Score", 0, 20, 10)
     bf2 =         st.checkbox('Bacterial Biofilm')
     bic2 =         st.checkbox('Intracellular Bacteria')
     aerd2 =            st.checkbox('AERD')
