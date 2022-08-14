@@ -6,3 +6,4 @@ scikit-survival
 xgboost
 mlxtend
 pandas_profiling
+statsmodels
