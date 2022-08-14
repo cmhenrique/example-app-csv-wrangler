@@ -2,21 +2,18 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
-from sklearn.metrics import confusion_matrix,accuracy_score,roc_curve,classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OrdinalEncoder
 
 from sksurv.datasets import load_gbsg2
 from sksurv.preprocessing import OneHotEncoder
-from sksurv.ensemble import RandomSurvivalForest
+from sksurv.ensemble.forest import RandomSurvivalForest
 
 from collections import Counter
-import pandas_profiling as pp
+#import pandas_profiling as pp
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble._forest import RandomForestClassifier
 from sklearn import model_selection
@@ -25,8 +22,14 @@ from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+import statsmodels.api as sm
+import pickle as pkl
+from joblib import dump, load
 
 ## HEADER
+from PIL import Image
+titleimg = Image.open('models/title.png')
+
 st.set_page_config(layout="wide")
 
 st.markdown("""
@@ -51,6 +54,8 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+
+
 st.markdown(f'''
     <style>
         section[data-testid="stSidebar"] .css-ng1t4o {{width: 17rem;}}
@@ -58,208 +63,243 @@ st.markdown(f'''
     </style>
 ''',unsafe_allow_html=True)
 
-st.markdown('<b class="big-font">Predicting post-operative evolution of patients with Chronic Rhinosinusitis</b>', unsafe_allow_html=True)
+st.markdown('<b class="big-font">Análise da influência de fatores clínicos do doador/receptor e circunstanciais na sobrevida do transplante renal no curto e longo prazo</b>', unsafe_allow_html=True)
 
 
 col1,col2,col3 = st.columns([1,1,2]) 
 
-@st.cache(allow_output_mutation=True)
+#@st.cache(allow_output_mutation=True)
 def model():
-    df = pd.read_csv("data7.csv") 
-    df2 = df[['BIC', 'BIOFILME', 'ASMA','AERD', 'POLIPO', 'CULTURA', 'STAPHYLO', 'LM', 'EOSINOFILICO']]  # Features
-    df3 = OneHotEncoder().fit_transform(df2)
-    Xt= df3
-    feature_names = Xt.columns.tolist()
+    with open('ICURO_data_y.pkl', 'rb') as f:
+        data_y = pkl.load(f)
+    with open('ICURO_data_x.pkl', 'rb') as f:
+        data_x = pkl.load(f)  
 
-    y = []
-    for x in df.intervalo:
-        if x > 8:
-            a = False
-        else:
-            a = True
-            
-        y.append((a, x))
+    random_state = 12
+    feature_names = data_x.columns.tolist()
 
-    dt = np.dtype([('cens', np.bool), ('time', np.float64, 1)])
-    y = np.array(y, dtype=dt)
+    X_train, X_test, y_train, y_test = train_test_split(data_x, data_y, test_size=0.25, random_state=random_state)
 
-    X_train, X_test, y_train, y_test = train_test_split(Xt, y, test_size=0.3, random_state=12)
-
-    rsf = RandomSurvivalForest()
+    rsf = RandomSurvivalForest(n_estimators=1000,
+                               min_samples_split=10,
+                               min_samples_leaf=20,
+                               max_features="sqrt",
+                               n_jobs=-1,
+                               random_state=random_state)
     rsf.fit(X_train, y_train)
     rsf.score(X_test, y_test)
 
     return rsf, feature_names
 
-def predict():
-    data = pd.read_csv("data7.csv") 
+with st.expander("Dados gerais do transplante"):
+    colAd,colBd,colDRd = st.columns([1,1,1])
+    with colAd:
+        tif = st.number_input('Tempo de Isquemia Fria', step = 1, key=7)
+        st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+        tipo_doador = st.radio('Tipo de Doador', ('Vivo', 'Cadaver'), key=8)
+    with colBd:
+        idade_d = st.number_input('Idade do Doador', step = 1, key=9)
+        st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+        sexo_d = st.radio('Sexo do Receptor', ('Masculino', 'Feminino'), key=10)
+    with colDRd:
+        idade_r = st.number_input('Idade do Receptor', step = 1,key=11)
+        st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+        sexo_r = st.radio('Sexo do Receptor', ('Masculino', 'Feminino'), key=12)
 
-    X=data[['BIC', 'BIOFILME', 'ASMA','AERD', 'POLIPO', 'CULTURA', 'STAPHYLO', 'LM', 'EOSINOFILICO']]  # Features
-    y=data['recidiva']  # Labels
+with st.expander("Dados de HLA do Doador"):
+    colAd,colBd,colDRd = st.columns([1,1,1])
+    with colAd:
+        HLAa1_d = st.number_input('HLA A1', step = 1, key=1)
+        HLAa2_d = st.number_input('HLA A2', step = 1, key=2)
+    with colBd:
+        HLAb1_d = st.number_input('HLA B1', step = 1, key=3)
+        HLAb2_d = st.number_input('HLA B2', step = 1, key=4)
+    with colDRd:
+        HLAdr1_d = st.number_input('HLA DR1', step = 1,key=5)
+        HLAdr2_d = st.number_input('HLA DR2', step = 1, key=6)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=12)
-    
-    ## LOGISTIC REGRESSION
-    lr = LogisticRegression()
-    model = lr.fit(X_train, y_train)
-    lr_predict = lr.predict(X_test)
-    lr_conf_matrix = confusion_matrix(y_test, lr_predict)
-    lr_acc_score = accuracy_score(y_test, lr_predict)
-    
-    ## RANDOM FOREST
-    rf = RandomForestClassifier(n_estimators=30, random_state=12,max_depth=1)
-    rf.fit(X_train,y_train)
-    rf_predicted = rf.predict(X_test)
-    rf_conf_matrix = confusion_matrix(y_test, rf_predicted)
-    rf_acc_score = accuracy_score(y_test, rf_predicted)
+with st.expander("Dados de HLA do Receptor"):
+    colAr,colBr,colDRr = st.columns([1,1,1])
+    with colAr:
+        HLAa1_r = st.number_input('HLA A1', step = 1)
+        HLAa2_r = st.number_input('HLA A2', step = 1)
+    with colBr:
+        HLAb1_r = st.number_input('HLA B1', step = 1)
+        HLAb2_r = st.number_input('HLA B2', step = 1)
+    with colDRr:
+        HLAdr1_r = st.number_input('HLA DR1', step = 1)
+        HLAdr2_r = st.number_input('HLA DR2', step = 1)
 
-    return lr
-
-with col1:
-    st.markdown("Pacient 1 Clinical variables associated")
-    lm =              st.slider("Lund-Mackay Score", 0, 20, 10, key=1)
-    bf =         st.checkbox('Bacterial Biofilm', key=1)
-    bic =         st.checkbox('Intracellular Bacteria', key=1)
-    aerd =            st.checkbox('AERD', key=1)
-    asma =            st.checkbox('Asthma', key=1)
-    cultura =         st.checkbox('Bacterial Culture', key=1)
-    polipo =         st.checkbox('Nasal Polyps', key=1)
-    eosinofilico =        st.checkbox('Eosinophilic Polyps', key=1)
-    staphylo =        st.checkbox('Staphylococcus aureus', key=1)
-
-with col2:
-    st.markdown("Pacient 2 Clinical variables associated")
-    lm2 =              st.slider("Lund-Mackay Score", 0, 20, 10)
-    bf2 =         st.checkbox('Bacterial Biofilm')
-    bic2 =         st.checkbox('Intracellular Bacteria')
-    aerd2 =            st.checkbox('AERD')
-    asma2 =            st.checkbox('Asthma')
-    cultura2 =         st.checkbox('Bacterial Culture')
-    polipo2 =         st.checkbox('Nasal Polyps')
-    eosinofilico2 =        st.checkbox('Eosinophilic Polyps')
-    staphylo2 =        st.checkbox('Staphylococcus aureus')
-    predizer = st.button('Predict patient outcome')
-
-with col3:
-    st.info("Kaplan Meier Curves")
-
-if bf:
-    bf = 1
-else:
-    bf =  0
-
-if bic:
-    bic = 1
-else:
-    bic =  0
-
-if aerd:
-    aerd = 1
-else:
-    aerd =  0
-
-if asma:
-    asma = 1
-else:
-    asma =  0
-
-if cultura:
-    cultura = 1
-else:
-    cultura =  0
-
-if polipo:
-    polipo = 1
-else:
-    polipo = 0
-
-if eosinofilico:
-    eosinofilico = 1
-else:
-    eosinofilico =  0
-
-if staphylo:
-    staphylo = 1
-else:
-    staphylo =  0
-
-if lm >= 15:
-    lm12 = 1
-else:
-    lm12 = 0
-
-if bf2:
-    bf2 = 1
-else:
-    bf2 =  0
-
-if bic2:
-    bic2 = 1
-else:
-    bic2 =  0
-
-if aerd2:
-    aerd2 = 1
-else:
-    aerd2 =  0
-
-if asma2:
-    asma2 = 1
-else:
-    asma2 =  0
-
-if cultura2:
-    cultura2 = 1
-else:
-    cultura2 =  0
-
-if polipo2:
-    polipo2 = 1
-else:
-    polipo2 = 0
-
-if eosinofilico2:
-    eosinofilico2 = 1
-else:
-    eosinofilico2 =  0
-
-if staphylo2:
-    staphylo2 = 1
-else:
-    staphylo2 =  0
-
-if lm2 >= 15:
-    lm22 = 1
-else:
-    lm22 = 0
-
-if (predizer):
-    texto = "Hello World"
+if (st.button('Predizer sobrevida após transplante')):
     rsf, feature_names = model()
-    rf = predict()
-   
-    paciente = [[bic, bf, asma, aerd, polipo, cultura, staphylo, lm, eosinofilico]]
-    pct = pd.DataFrame(paciente, columns = feature_names)
 
-    paciente2 = [[bic2, bf2, asma2, aerd2, polipo2, cultura2, staphylo2, lm2, eosinofilico2]]
-    pct2 = pd.DataFrame(paciente2, columns = feature_names)
-
-    with col3:
-        st.subheader(" ")
+    ## Compatibilidades
+    # Para cada HLA, temos 4 combinações para checar
     
-        surv = rsf.predict_survival_function(pct, return_array=True)
-        for i, s in enumerate(surv):
-            plt.step(rsf.event_times_, s, where="post", label="Pacient 1")
-            prob = s
+    match = 0
+    mismatch = 0
+    
+    #### COMPATIBILIDADE HLAa ####
+    if HLAa1_r == HLAa1_d:
+        comp_HLAa1a1 = 0
+    else:
+        comp_HLAa1a1 = 1
+        
+    if HLAa1_r == HLAa2_d:
+        comp_HLAa1a2 = 0
+    else:
+        comp_HLAa1a2 = 1 
+        
+    if HLAa2_r == HLAa1_d:
+        comp_HLAa2a1 = 0
+    else:
+        comp_HLAa2a1 = 1
+        
+    if HLAa2_r == HLAa2_d:
+        comp_HLAa2a2 = 0
+    else:
+        comp_HLAa2a2 = 1
+    
+     #### COMPATIBILIDADE HLAb ####
+    if HLAb1_r == HLAb1_d:
+        comp_HLAb1b1 = 0
+    else:
+        comp_HLAb1b1 = 1
+        
+    if HLAb1_r == HLAb2_d:
+        comp_HLAb1b2 = 0
+    else:
+        comp_HLAb1b2 = 1 
+        
+    if HLAb2_r == HLAb1_d:
+        comp_HLAb2b1 = 0
+    else:
+        comp_HLAb2b1 = 1
+    
+    if HLAb2_r == HLAb2_d:
+        comp_HLAb2b2 = 0
+    else:
+        comp_HLAb2b2 = 1
+        
+    #### COMPATIBILIDADE HLAdr ####
+    if HLAdr1_r == HLAdr1_d:
+        comp_HLAdr1dr1 = 0
+    else:
+        comp_HLAdr1dr1 = 1
+        
+    if HLAdr1_r == HLAdr2_d:
+        comp_HLAdr1dr2 = 0
+    else:
+        comp_HLAdr1dr2 = 1 
+        
+    if HLAdr2_r == HLAdr1_d:
+        comp_HLAdr2dr1 = 0
+    else:
+        comp_HLAdr2dr1 = 1
+        
+    if HLAdr2_r == HLAdr2_d:
+        comp_HLAdr2dr2 = 0
+    else:
+        comp_HLAdr2dr2 = 1
+    
+    #MATCH
+    l_a = [HLAa1_d, HLAa2_d]
+    l_b = [HLAb1_d, HLAb2_d]
+    l_dr = [HLAdr1_d, HLAdr2_d]
 
-        surv2 = rsf.predict_survival_function(pct2, return_array=True)
+    if HLAa1_r in l_a and pd.isnull(HLAa1_r) == False and pd.isnull(HLAa1_d) == False:
+        match += 1
 
-        for i, s in enumerate(surv2):
-            plt.step(rsf.event_times_, s, where="post", label="Pacient 2")
+    if HLAa2_r in l_a and pd.isnull(HLAa2_r) == False and pd.isnull(HLAa2_d) == False:
+        match += 1
+
+    if HLAb1_r in l_b and pd.isnull(HLAb1_r) == False and pd.isnull(HLAb1_d) == False:
+        match += 1
+
+    if HLAb2_r in l_b and pd.isnull(HLAb2_r) == False and pd.isnull(HLAb2_d) == False:
+        match += 1
+
+    if HLAdr1_r in l_dr and pd.isnull(HLAdr1_r) == False and pd.isnull(HLAdr1_d) == False:
+        match += 1
+
+    if HLAdr2_r in l_dr and pd.isnull(HLAdr2_r) == False and pd.isnull(HLAdr2_d) == False:
+        match += 1
+    
+    #MISMATCH
+    l_a = [HLAa1_d, HLAa2_d]
+    l_b = [HLAb1_d, HLAb2_d]
+    l_dr = [HLAdr1_d, HLAdr2_d]
+
+    if HLAa1_r not in l_a and pd.isnull(HLAa1_r) == False and pd.isnull(HLAa1_d) == False:
+        mismatch += 1
+
+    if HLAa2_r not in l_a and pd.isnull(HLAa2_r) == False and pd.isnull(HLAa2_d) == False:
+        mismatch += 1
+
+    if HLAb1_r not in l_b and pd.isnull(HLAb1_r) == False and pd.isnull(HLAb1_d) == False:
+        mismatch += 1
+
+    if HLAb2_r not in l_b and pd.isnull(HLAb2_r) == False and pd.isnull(HLAb2_d) == False:
+        mismatch += 1
+
+    if HLAdr1_r not in l_dr and pd.isnull(HLAdr1_r) == False and pd.isnull(HLAdr1_d) == False:
+        mismatch += 1
+
+    if HLAdr2_r not in l_dr and pd.isnull(HLAdr2_r) == False and pd.isnull(HLAdr2_d) == False:
+        mismatch += 1
+
+    if sexo_r == "Masculino":
+        sexo_r = 1
+    else:
+        sexo_r = 0
+        
+    if sexo_d == "Masculino":
+        sexo_d = 1
+    else:
+        sexo_d = 0 
+
+    if tipo_doador == "Cadaver":
+        tipo_doador = 0
+    else:
+        tipo_doador = 1
+
+    paciente = [
+        idade_r,
+        idade_d,
+        sexo_r,
+        sexo_d,
+        tif,
+        tipo_doador,
+        comp_HLAa1a1, 
+        comp_HLAa1a2,
+        comp_HLAa2a1,
+        comp_HLAa2a2,
+        comp_HLAb1b1,
+        comp_HLAb1b2,
+        comp_HLAb2b1,
+        comp_HLAb2b2,
+        comp_HLAdr1dr1, 
+        comp_HLAdr1dr2,
+        comp_HLAdr2dr1,
+        comp_HLAdr2dr2,
+        match,
+        mismatch]
+
+    pct = pd.DataFrame([paciente], columns = feature_names)
+
+
+    surv = rsf.predict_survival_function(pct, return_array=True)
+
+    col1,col2 = st.columns([1,1]) 
+
+    for i, s in enumerate(surv):
+        plt.step(rsf.event_times_/365, s, where="post", label=str(i))
+        prob = s
+        ano = (rsf.event_times_/365).astype(int)
 
         plt.ylabel("Survival probability")
         plt.xlabel("Time in years")
-        plt.legend()
+        plt.legend('Teste')
         plt.tight_layout()
         plt.grid(True)
         from io import BytesIO
@@ -270,4 +310,20 @@ if (predizer):
         fig = plt
         buf = BytesIO()
         fig.savefig(buf, format="png")
-        st.image(buf, width = 500)
+
+        with col1:
+            st.image(buf, width = 500)
+
+        with col2:
+            st.subheader('Probabilidade de sobrevida do enxerto após transplante renal')
+            index5 = np.where(ano==5)[0][0]
+            index10 = np.where(ano==10)[0][0]
+            index20 = np.where(ano==20)[0][0]
+
+            p5 = "{0:.0%}".format(s[index5])
+            p10 = "{0:.0%}".format(s[index10])
+            p20 = "{0:.0%}".format(s[index20])
+
+            st.metric(label="5 anos", value=p5)
+            st.metric(label="10 anos", value=p10)
+            st.metric(label="20 anos", value=p20)
