@@ -70,7 +70,7 @@ col1,col2,col3 = st.columns([1,1,2])
 def model():
     
     data_y = np.load('ICURO_data_y.npy')
-    data_x = np.load('ICURO_data_x.npy')
+    data_x = pd.read_csv("ICURO_data_x.csv") 
 
     random_state = 12
     feature_names = data_x.columns.tolist()
