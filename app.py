@@ -23,7 +23,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 import statsmodels.api as sm
-import pickle as pkl
+import pickle5 as pkl
 from joblib import dump, load
 
 ## HEADER
@@ -67,7 +67,7 @@ st.markdown('<b class="big-font">Análise da influência de fatores clínicos do
 
 col1,col2,col3 = st.columns([1,1,2]) 
 
-#@st.cache(allow_output_mutation=True)
+@st.cache(allow_output_mutation=True)
 def model():
     with open('ICURO_data_y.pkl', 'rb') as f:
         data_y = pkl.load(f)
