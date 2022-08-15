@@ -9,4 +9,4 @@ xgboost
 mlxtend
 pandas_profiling
 statsmodels
-pickle
+pickle5
