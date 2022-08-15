@@ -23,7 +23,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 import statsmodels.api as sm
-import pickle5 as pkl
 from joblib import dump, load
 
 ## HEADER
@@ -69,10 +68,9 @@ col1,col2,col3 = st.columns([1,1,2])
 
 @st.cache(allow_output_mutation=True)
 def model():
-    with open('ICURO_data_y.pkl', 'rb') as f:
-        data_y = pkl.load(f)
-    with open('ICURO_data_x.pkl', 'rb') as f:
-        data_x = pkl.load(f)  
+    
+    data_y = np.load('ICURO_data_y.npy')
+    data_x = np.load('ICURO_data_x.npy')
 
     random_state = 12
     feature_names = data_x.columns.tolist()
